@@ -1,0 +1,30 @@
+{
+  "name": "simple-channel",
+  "version": "1.0.0",
+  "description": "channel",
+  "main": "dist/index.js",
+  "typings": "dist/types/index.d.ts",
+  "eslintIgnore": [
+    "dist/index.js"
+  ],
+  "scripts": {
+    "test": "jest",
+    "build": "webpack"
+  },
+  "keywords": [
+    "channel"
+  ],
+  "author": "hjiayz",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@typescript-eslint/eslint-plugin": "^3.9.0",
+    "@typescript-eslint/parser": "^3.9.0",
+    "eslint": "^7.6.0",
+    "jest": "^26.4.0",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
+}
