@@ -1,8 +1,8 @@
 declare class Receiver<T> {
     private handle;
     private cache;
-    constructor(handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null], cache: (T | symbol)[]);
-    [Symbol.asyncIterator](): AsyncGenerator<unknown, void, unknown>;
+    constructor(handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null, boolean], cache: T[]);
+    [Symbol.asyncIterator](): AsyncGenerator<T, void, void>;
 }
 declare class Sender<T> {
     private onSend;

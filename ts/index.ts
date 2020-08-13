@@ -1,25 +1,28 @@
-const closeCmd = Symbol();
-
 class Receiver<T> {
-    private handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null];
-    private cache: (T|symbol)[];
-    constructor(handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null], cache: (T|symbol)[]) {
+    private handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null, boolean];
+    private cache: T[];
+    constructor(handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null, boolean], cache: T[]) {
         this.handle = handle;
         this.cache = cache;
     }
-    async*[Symbol.asyncIterator]() {
+    async*[Symbol.asyncIterator](): AsyncGenerator<T, void, void> {
         while (true) {
             try {
-                yield new Promise((res, err) => {
-                    if (this.cache.length > 0) {
-                        const msg = this.cache.shift();
-                        if (msg === closeCmd) {
-                            err();
-                        }
+                yield new Promise((res: (this: void, msg: T) => void, err: (this: void) => void) => {
+                    const msg = this.cache.shift();
+                    if (typeof msg !== "undefined") {
+                        //send cache msg to iterator
                         res(msg);
                     } else {
-                        this.handle[0] = res;
-                        this.handle[1] = err;
+                        if (this.handle[2]) {
+                            //stop
+                            err();
+                        }
+                        else {
+                            //waiting
+                            this.handle[0] = res;
+                            this.handle[1] = err;
+                        }
                     }
                 });
             }
@@ -33,10 +36,10 @@ class Receiver<T> {
     }
 }
 class Sender<T> {
-    private onSend: (this: void, msg: T ) => void;
+    private onSend: (this: void, msg: T) => void;
     private onClose: (this: void) => void;
     private isClosed: boolean;
-    constructor(onSend: (this: void, msg: T ) => void,onClose:(this:void)=>void) {
+    constructor(onSend: (this: void, msg: T) => void, onClose: (this: void) => void) {
         this.onSend = onSend;
         this.isClosed = false;
         this.onClose = onClose;
@@ -53,26 +56,34 @@ class Sender<T> {
     }
 }
 function channel<T>(): [Sender<T>, Receiver<T>] {
-    const cache: (T|symbol)[] = [];
-    const handle: [((this: void, msg: T ) => void) | null, ((this: void) => void) | null] = [null, null];
+    const cache: T[] = [];
+    //[onSend,onClose,isClosed]
+    const handle: [((this: void, msg: T) => void) | null, ((this: void) => void) | null, boolean] = [null, null, false];
     const rx = new Receiver(handle, cache);
     const senderOnSend = (msg: T) => {
         if (handle[0] === null) {
             cache.push(msg);
             return;
         }
-        handle[0](msg);
-        handle.fill(null);
+        const onSend = handle[0];
+        handle[0] = null;
+        handle[1] = null;
+        onSend(msg);
     };
-    const senderOnClose = () =>{
+    const senderOnClose = () => {
         if (handle[1] === null) {
-            cache.push(closeCmd);
+            handle[2] = true;
             return;
         }
-        handle[1]();
-        handle.fill(null);
+        //onClose not null
+        //Promise waiting
+        //cache is empty
+        const onClose = handle[1];
+        handle[0] = null;
+        handle[1] = null;
+        onClose();
     };
-    const tx = new Sender(senderOnSend,senderOnClose);
+    const tx = new Sender(senderOnSend, senderOnClose);
     return [tx, rx]
 }
 

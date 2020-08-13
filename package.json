@@ -1,6 +1,6 @@
 {
   "name": "simple-channel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "channel",
   "main": "dist/index.js",
   "typings": "dist/types/index.d.ts",
@@ -31,7 +31,7 @@
     "type": "git",
     "url": "https://github.com/hjiayz/simple-channel.git"
   },
-  "bugs":{
+  "bugs": {
     "url": "https://github.com/hjiayz/simple-channel/issues"
   }
 }
