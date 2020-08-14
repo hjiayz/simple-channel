@@ -5,14 +5,24 @@ it('channel', async () => {
   let [tx, rx] = channel();
   tx.send("123");
   tx.send("456");
-  setTimeout(()=>{
-    tx.send("567");
-    tx.close();
-  },1000);
+  let tx2 = tx.clone();
+  setTimeout(() => {
+    tx2.send("567");
+    tx2.close();
+  }, 1000);
   let results = [];
-  for await (let msg of rx) {
-    results.push(msg);
+  let haserr = false;
+  try {
+    for await (let msg of rx) {
+      results.push(msg);
+      if (msg === "567") throw 6;
+    }
   }
+  catch (e) {
+    haserr = true;
+    expect(e).toBe(6);
+  }
+  expect(haserr).toBe(true);
   expect(results[0]).toBe("123");
   expect(results[1]).toBe("456");
   expect(results[2]).toBe("567");

@@ -1,6 +1,6 @@
 {
   "name": "simple-channel",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "channel",
   "main": "dist/index.js",
   "typings": "dist/types/index.d.ts",
@@ -12,7 +12,9 @@
     "build": "webpack"
   },
   "keywords": [
-    "channel"
+    "channel",
+    "AsyncIterator",
+    "Callback"
   ],
   "author": "hjiayz",
   "license": "MIT",
