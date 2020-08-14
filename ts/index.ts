@@ -1,4 +1,4 @@
-const channelClosed=Symbol();
+const channelClosed = Symbol();
 
 class Receiver<T> {
     private handle: [((this: void, msg: T) => void) | null, ((this: void, msg: symbol) => void) | null, boolean];
@@ -10,23 +10,23 @@ class Receiver<T> {
     async*[Symbol.asyncIterator](): AsyncGenerator<T, void, void> {
         while (true) {
             try {
-                yield new Promise((res: (this: void, msg: T) => void, err: (this: void, msg: symbol) => void) => {
-                    const msg = this.cache.shift();
-                    if (typeof msg !== "undefined") {
-                        //send cache msg to iterator
-                        res(msg);
-                    } else {
-                        if (this.handle[2]) {
-                            //stop
-                            err(channelClosed);
-                        }
-                        else {
-                            //waiting
+                const msg = this.cache.shift();
+                if (typeof msg !== "undefined") {
+                    //send cache msg to iterator
+                    yield msg;
+                } else {
+                    if (this.handle[2]) {
+                        //stop
+                        throw channelClosed;
+                    }
+                    else {
+                        //waiting
+                        yield await new Promise((res: (this: void, msg: T) => void, err: (this: void, msg: symbol) => void) => {
                             this.handle[0] = res;
                             this.handle[1] = err;
-                        }
+                        })
                     }
-                });
+                }
             }
             catch (e) {
                 if (e !== channelClosed) {
@@ -41,7 +41,7 @@ class Sender<T> {
     private onSend: (this: void, msg: T) => void;
     private onClose: (this: void) => void;
     private isClosed: [boolean];
-    constructor(onSend: (this: void, msg: T) => void, onClose: (this: void) => void,isClosed:[boolean]) {
+    constructor(onSend: (this: void, msg: T) => void, onClose: (this: void) => void, isClosed: [boolean]) {
         this.onSend = onSend;
         this.isClosed = isClosed;
         this.onClose = onClose;
@@ -56,8 +56,8 @@ class Sender<T> {
         this.isClosed[0] = true;
         this.onClose();
     }
-    clone():Sender<T> {
-        return new Sender(this.onSend,this.onClose,this.isClosed);
+    clone(): Sender<T> {
+        return new Sender(this.onSend, this.onClose, this.isClosed);
     }
 }
 function channel<T>(): [Sender<T>, Receiver<T>] {

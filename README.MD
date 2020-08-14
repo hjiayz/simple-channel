@@ -15,7 +15,7 @@ const channel = require('simple-channel').Channel.channel;
   for await (let msg of rx) {
     console.log(msg);
   }
-})()
+})();
 ```
 ### features:
 * [AsyncIterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator)
@@ -31,7 +31,7 @@ const onMessage = (msg)=>{
 };
 const onClose = () =>{
   tx.close();
-}
+};
 let handle = setInterval(()=>{
   count++;
   if (count>5) {
@@ -45,5 +45,5 @@ let handle = setInterval(()=>{
   for await (let msg of rx) {
     console.log(msg);
   }
-})()
+})();
 ```
